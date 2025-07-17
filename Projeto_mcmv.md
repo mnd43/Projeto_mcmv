@@ -1,13 +1,12 @@
-# Projeto_mcmv
 # 🏠 Análise Programa Minha Casa Minha Vida
 
-## 📌 Contexto  
+## Contexto  
 O Programa Minha Casa, Minha Vida (MCMV) é uma iniciativa habitacional do governo federal do Brasil, criada pelo presidente Lula em março de 2009. Ele é gerenciado pelo Ministério das Cidades e oferece subsídios e taxas de juros reduzidas para tornar mais acessível a aquisição de moradias populares. Ele abrange diversas faixas de renda e especificações de locais e formas de financiamento.
 
-## 🎯 Objetivo  
+## Objetivo  
 Analisar as informações sobre Minha Casa, Minha Vida - Linha Financiada, que são unidades habitacionais contratadas via financiamento a pessoas físicas, com recursos do Fundo de Garantia do Tempo de Serviço (FGTS), de maneira analítica, ou seja, apresentando os dados sobre os contratos de financiamento do FGTS, nas faixas de renda do MCMV, ao nível de pessoa física.
 
-## 🛠️ Ferramentas Utilizadas  
+## Ferramentas Utilizadas  
 Utilizei o VS Code e o Notepad++ para tratamento inicial de caracteres da base; em seguida, utilizei o SQL Server para importação da base, tratamento de dados e para as consultas SQL da análise; posteriormente, utilizei o Power BI para visualização gráfica de algumas consultas.
 
 ### Dicionário de Dados:
