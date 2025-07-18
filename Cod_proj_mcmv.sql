@@ -10,10 +10,9 @@ SELECT COLUMN_NAME, DATA_TYPE
 FROM INFORMATION_SCHEMA.COLUMNS 
 WHERE TABLE_NAME = 't_mcmv';
 
--- Como a data de refêrência é sobre quando o governo disponibilizou os dados, e não será útil para a análise, poderia dropar ela
--- ALTER TABLE t_mcmv DROP COLUMN data_referencia;
+
 --TRATAMENTO E LIMPEZA
--- Alterando a vírgula por ponto para conseguir alterar o VARCHAR para DECIMAL
+-- Alterando a vÃ­rgula por ponto para conseguir alterar o VARCHAR para DECIMAL
 UPDATE t_mcmv 
 SET vlr_financiamento = REPLACE(vlr_financiamento, ',', '.')
 WHERE vlr_financiamento LIKE '%,%';
@@ -121,7 +120,7 @@ WHERE txt_compatibilidade_faixa_renda = ' ';-- sem nulos
 SELECT * FROM t_mcmv
 WHERE txt_nome_empreendimento = ' ';-- 6.940.805 nulos
 
--- Alterando o tipo dos dados das colunase numéricas e de  data
+-- Alterando o tipo dos dados das colunase numÃ©ricas e de  data
 ALTER TABLE t_mcmv ALTER COLUMN qtd_uh_financiadas INT;
 ALTER TABLE t_mcmv ALTER COLUMN vlr_financiamento DECIMAL(18,2);
 ALTER TABLE t_mcmv ALTER COLUMN vlr_subsidio_desconto_fgts DECIMAL(18,2);
@@ -144,7 +143,7 @@ UPDATE t_mcmv
 SET dte_nascimento = NULL
 WHERE dte_nascimento = '1900-01-01';
 
--- Criando tabelas Dimensão
+-- Criando tabelas DimensÃ£o
 -- DIM Tempo a partir da data de assinatura
 CREATE TABLE dim_tempo (
   id_tempo INT IDENTITY(1,1) PRIMARY KEY,
@@ -155,7 +154,7 @@ CREATE TABLE dim_tempo (
   trimestre INT
 );
 
--- Inserindo na dim_tempo as informações a partir da data_assinatura_financiamento da minha base principal
+-- Inserindo na dim_tempo as informaÃ§Ãµes a partir da data_assinatura_financiamento da minha base principal
 INSERT INTO dim_tempo (data_assinatura, ano, mes, nome_mes, trimestre)
 SELECT DISTINCT
   data_assinatura_financiamento,
@@ -165,18 +164,18 @@ SELECT DISTINCT
   DATEPART(QUARTER, data_assinatura_financiamento)
 FROM t_mcmv;
 
--- Adicionando uma linha especial com valor de "não informado" para preencher os dados faltantes
+-- Adicionando uma linha especial com valor de "nÃ£o informado" para preencher os dados faltantes
 INSERT INTO dim_tempo (data_assinatura, ano, mes, nome_mes, trimestre)
-VALUES (NULL, NULL, NULL, 'Não Informada', NULL);
+VALUES (NULL, NULL, NULL, 'NÃ£o Informada', NULL);
 
 -- Adicionando a chave estrangeira da dim_tempo na minha base principal
 ALTER TABLE t_mcmv ADD id_tempo INT;
 
--- Criando indices para facilitar na insersão dos dados na tabela fato 
+-- Criando indices para facilitar na insersÃ£o dos dados na tabela fato 
 CREATE NONCLUSTERED INDEX idx_dim_tempo_data
 ON dim_tempo (data_assinatura);
 
--- PAREI AQUI 06/07/2025 01:09 da manhã
+-- PAREI AQUI 06/07/2025 01:09 da manhÃ£
 -- Preenchendo a coluna id_tempo da dim_tempo na tabela fato, principal:
 UPDATE t_mcmv
 SET id_tempo = dim_tempo.id_tempo
@@ -201,11 +200,11 @@ CREATE TABLE dim_localidade (
   regiao VARCHAR(20)
 );
 
--- Criando índice ÚNICO na dimensão (cod_ibge é único por cidade)
+-- Criando Ã­ndice ÃšNICO na dimensÃ£o (cod_ibge Ã© Ãºnico por cidade)
 CREATE UNIQUE NONCLUSTERED INDEX idx_cod_ibge_dimlocalidade 
 ON dim_localidade(cod_ibge);
 
--- Criando índice auxiliar na FATO para acelerar o JOIN
+-- Criando Ã­ndice auxiliar na FATO para acelerar o JOIN
 CREATE NONCLUSTERED INDEX idx_cod_ibge_mcmv 
 ON t_mcmv (cod_ibge);
 
@@ -238,7 +237,7 @@ WHERE txt_tipo_imovel <> ' ';
 
 -- Criando uma linha especial para nulos
 INSERT INTO dim_tipo_imovel (descricao_tipo_imovel)
-VALUES ('Não Informado');
+VALUES ('NÃ£o Informado');
 
 SELECT * FROM dim_tipo_imovel;
 
@@ -259,8 +258,7 @@ JOIN dim_tipo_imovel d
 SELECT * FROM dim_tipo_imovel;
 SELECT * FROM t_mcmv
 WHERE id_tipo_imovel = 3;
--- Atualizando os nulos da fato com os valores de id_imovel da DIM - Nessa atualização da tabela 25/06 nao tem mais nulos
---UPDATE t_mcmv
+-- Atualizando os nulos da fato com os valores de id_imovel da DIM
 --SET id_tipo_imovel = 3
 --WHERE id_tipo_imovel IS NULL;
 
@@ -292,7 +290,7 @@ FROM t_mcmv
 JOIN dim_faixa_renda ON t_mcmv.txt_compatibilidade_faixa_renda = dim_faixa_renda.faixa_renda;
 
 
--- Criando DIM sistemas de amortização
+-- Criando DIM sistemas de amortizaÃ§Ã£o
 CREATE TABLE dim_sistema_amortizacao (
   id_sistema INT IDENTITY(1,1) PRIMARY KEY,
   sistema VARCHAR(100)
@@ -301,7 +299,7 @@ CREATE TABLE dim_sistema_amortizacao (
 INSERT INTO dim_sistema_amortizacao (sistema)
 SELECT DISTINCT 
   CASE 
-    WHEN txt_sistema_amortizacao = ' ' THEN 'Não informado'
+    WHEN txt_sistema_amortizacao = ' ' THEN 'NÃ£o informado'
     ELSE txt_sistema_amortizacao
   END
 FROM t_mcmv;
@@ -338,7 +336,7 @@ CREATE TABLE dim_programa (
 );
 
 
--- Preenchendo a dim_programa com as informações a partir da fato
+-- Preenchendo a dim_programa com as informaÃ§Ãµes a partir da fato
 INSERT INTO dim_programa (nome_programa)
 SELECT DISTINCT txt_programa_fgts
 FROM t_mcmv;
@@ -363,12 +361,12 @@ JOIN dim_programa p
   situacao_cotista VARCHAR(20)
 );
 SELECT TOP 250 * FROM t_mcmv;
--- Preenchendo a dim_costisa não a partir da fato, mas a partir do que já sabemos que a coluna identifica
+-- Preenchendo a dim_costisa nÃ£o a partir da fato, mas a partir do que jÃ¡ sabemos que a coluna identifica
 INSERT INTO dim_cotista (situacao_cotista)
 VALUES 
   ('Sim'),
-  ('Não'),
-  ('Não Informado');
+  ('NÃ£o'),
+  ('NÃ£o Informado');
 
 -- Adicionando a coluna na fato
 ALTER TABLE t_mcmv ADD id_cotista INT;
@@ -383,8 +381,8 @@ FROM t_mcmv
 JOIN dim_cotista d 
   ON 
     (t_mcmv.bln_cotista = 'S' AND d.situacao_cotista = 'Sim') OR
-    (t_mcmv.bln_cotista = 'N' AND d.situacao_cotista = 'Não') OR
-    (LTRIM(RTRIM(t_mcmv.bln_cotista)) = '' AND d.situacao_cotista = 'Não Informado');
+    (t_mcmv.bln_cotista = 'N' AND d.situacao_cotista = 'NÃ£o') OR
+    (LTRIM(RTRIM(t_mcmv.bln_cotista)) = '' AND d.situacao_cotista = 'NÃ£o Informado');
 
 
 -- Preenchendo os X
@@ -398,7 +396,7 @@ WHERE bln_cotista = 'X';
 SELECT * FROM dim_cotista;
 SELECT TOP 250 * FROM t_mcmv;
 
-/*--fazendo um backup do projeto até aqui
+/*--fazendo um backup do projeto atÃ© aqui
 BACKUP DATABASE ProjetMCMV
 TO DISK = 'D:\Amanda\Yukio\Projeto MCMV\backup_mcmv.bak'
 WITH INIT, NAME = 'Backup_MCMV_Sem_Compressao';
@@ -424,25 +422,25 @@ ORDER BY total_unidades_financiadas DESC;
 */ 
 
 
--- Verificando todos os índices que usam colunas da tabela fato t_mcmv (que criei para facilitar a criação das DIMs)
+-- Verificando todos os Ã­ndices que usam colunas da tabela fato t_mcmv (que criei para facilitar a criaÃ§Ã£o das DIMs)
 SELECT i.name AS nome_indice, c.name AS coluna
 FROM sys.indexes i
 JOIN sys.index_columns ic ON i.index_id = ic.index_id AND i.object_id = ic.object_id
 JOIN sys.columns c ON ic.column_id = c.column_id AND ic.object_id = c.object_id
 WHERE OBJECT_NAME(i.object_id) = 't_mcmv';
 
--- O que acontece quando você deleta um índice
--- Não afeta a estrutura da tabela:
+-- O que acontece quando vocÃª deleta um Ã­ndice
+-- NÃ£o afeta a estrutura da tabela:
 -- A tabela (t_mcmv, por exemplo) continua existindo normalmente
--- Nenhuma coluna é alterada nem perde dados
--- Nenhuma constraint (PRIMARY KEY, FOREIGN KEY, etc.) é afetada, a menos que o índice seja parte de uma constraint (não é seu caso aqui)
+-- Nenhuma coluna Ã© alterada nem perde dados
+-- Nenhuma constraint (PRIMARY KEY, FOREIGN KEY, etc.) Ã© afetada, a menos que o Ã­ndice seja parte de uma constraint (nÃ£o Ã© o caso aqui)
 
 
 SELECT COLUMN_NAME, DATA_TYPE
 FROM INFORMATION_SCHEMA.COLUMNS
 WHERE TABLE_NAME = 't_mcmv';
 
--- Apagando índices que dependem de colunas que serão removidas
+-- Apagando Ã­ndices que dependem de colunas que serÃ£o removidas
 DROP INDEX idx_bln_cotista_mcmv ON t_mcmv;
 DROP INDEX idx_cod_ibge_mcmv ON t_mcmv;
 DROP INDEX idx_txt_tipo_imovel_mcmv ON t_mcmv;
@@ -451,15 +449,15 @@ DROP INDEX idx_mcmv_sistema_amortizacao ON t_mcmv;
 DROP INDEX idx_txt_programa_fgts_mcmv ON t_mcmv;
 
 
--- O comando BEGIN TRANSACTION inicia explicitamente uma transação. 
--- A partir desse ponto, qualquer modificação no banco de dados (como INSERT, UPDATE, DELETE, ou ALTER) ficará em estado pendente até que se execute:
--- COMMIT: para confirmar e aplicar definitivamente todas as alterações realizadas desde o início da transação.
--- ROLLBACK: para cancelar a transação e desfazer todas as alterações realizadas dentro dela.
+-- O comando BEGIN TRANSACTION inicia explicitamente uma transaÃ§Ã£o. 
+-- A partir desse ponto, qualquer modificaÃ§Ã£o no banco de dados (como INSERT, UPDATE, DELETE, ou ALTER) ficarÃ¡ em estado pendente atÃ© que se execute:
+-- COMMIT: para confirmar e aplicar definitivamente todas as alteraÃ§Ãµes realizadas desde o inÃ­cio da transaÃ§Ã£o.
+-- ROLLBACK: para cancelar a transaÃ§Ã£o e desfazer todas as alteraÃ§Ãµes realizadas dentro dela.
 
--- Fazendo um begin transaction prar dropar várias colunas.
+-- Fazendo um begin transaction prar dropar vÃ¡rias colunas.
 BEGIN TRANSACTION;
 
--- DROP das colunas já representadas pelas DIMs
+-- DROP das colunas jÃ¡ representadas pelas DIMs
 ALTER TABLE t_mcmv 
 DROP COLUMN 
   cod_ibge,
@@ -473,7 +471,7 @@ DROP COLUMN
   bln_cotista,
   data_assinatura_financiamento;
 
--- Verifique se tudo está OK até aqui
+-- Verifique se tudo estÃ¡ OK atÃ© aqui
 SELECT * FROM dim_tipo_imovel;
 SELECT * FROM dim_tempo;
 SELECT * FROM dim_sistema_amortizacao;
@@ -483,19 +481,19 @@ SELECT * FROM dim_faixa_renda;
 SELECT * FROM dim_cotista;
 SELECT TOP 100 * FROM t_mcmv;
 
--- Se estiver tudo certo, CONFIRMA:
+-- Se estiver tudo certo, CONFIRMO:
 --COMMIT;
 
 -- Se quiser desfazer tudo:
 --ROLLBACK;
 
--- ## CONSULTAS - VISUALIZAÇÕES ## 
+-- ## CONSULTAS - VISUALIZAÃ‡Ã•ES ## 
 
 -- Visualizando o valor total geral de unidades financiadas.
--- Como cada registro se refere a um financiamento, até mesmo pela natureza do programa que permite financiamento apenas de uma unidade, temos o total igual ao total 
+-- Como cada registro se refere a um financiamento, atÃ© mesmo pela natureza do programa que permite financiamento apenas de uma unidade, temos o total igual ao total 
 -- de linhas da tabela: 6.911.512
 
-SELECT SUM(qtd_uh_financiadas) AS Total_habitações
+SELECT SUM(qtd_uh_financiadas) AS Total_habitaÃ§Ãµes
 FROM t_mcmv;
 
 -- Visualizando ano mais antigo, desde quando temos os dados de financiamentos: 2005
@@ -503,8 +501,8 @@ SELECT MIN(dd.ano) AS data_mais_antiga
 FROM t_mcmv t
 JOIN dim_tempo dd ON t.id_tempo = dd.id_tempo;
 
--- O programa MCMV foi criado em 2009, pela lógica é estranho ter datas anteriores a 2009: 232 registros entre 2005 e 2008.
--- Depois de me aprofundar no assunto, entendi que existiam outros programas antes do MCMV e que em 1967 começou a prática da utilização do FGTS.
+-- O programa MCMV foi criado em 2009, pela lÃ³gica Ã© estranho ter datas anteriores a 2009: 232 registros entre 2005 e 2008.
+-- Depois de me aprofundar no assunto, entendi que existiam outros programas antes do MCMV e que em 1967 comeÃ§ou a prÃ¡tica da utilizaÃ§Ã£o do FGTS.
 -- Aparentemente a base mantem alguns dados antigos.
 SELECT dd.ano, COUNT(dd.ano) AS ano_mais_antigo
 FROM t_mcmv t
@@ -545,7 +543,7 @@ ORDER BY Quantidade DESC;
 
 
 
--- Visualizando o total de unidades financiadas por cidade do país
+-- Visualizando o total de unidades financiadas por cidade do paÃ­s
 SELECT dl.txt_municipio, dl.uf, SUM(qtd_uh_financiadas) AS Quantidade
 FROM t_mcmv t
 JOIN dim_localidade dl ON t.id_localidade = dl.id_localidade
@@ -568,7 +566,7 @@ JOIN dim_faixa_renda dfr ON t.id_faixa_renda = dfr.id_faixa_renda
 GROUP BY dfr.faixa_renda, dl.uf
 ORDER BY dl.uf, Quantidade DESC;
 
--- Visualizando a porcentagem de cada faixa da UF em relação ao total geral de unidades financiadas
+-- Visualizando a porcentagem de cada faixa da UF em relaÃ§Ã£o ao total geral de unidades financiadas
   WITH TotalUnidades AS (
   SELECT SUM(qtd_uh_financiadas) AS total_geral
   FROM t_mcmv t
@@ -594,12 +592,12 @@ ORDER BY
   dl.uf, 
   dfr.faixa_renda;
 
--- Visualizando a média geral da renda familiar das contratações de financiamento com FGTS: 3041.175200
+-- Visualizando a mÃ©dia geral da renda familiar das contrataÃ§Ãµes de financiamento com FGTS: 3046.358662
 
   SELECT AVG(vlr_renda_familiar) AS renda_media
   FROM t_mcmv;
 
- -- Visualizando a média de renda familiar por UF
+ -- Visualizando a mÃ©dia de renda familiar por UF
 
  SELECT dl.uf, AVG(vlr_renda_familiar) AS renda_media
  FROM t_mcmv t
@@ -607,7 +605,7 @@ ORDER BY
  GROUP BY dl.uf
  ORDER BY renda_media DESC, dl.uf;
 
-  -- Visualizando quais UFs tem a média de renda familiar maior do que a média nacional
+  -- Visualizando quais UFs tem a mÃ©dia de renda familiar maior do que a mÃ©dia nacional
 
 SELECT dl.uf, AVG(vlr_renda_familiar) AS renda_media
 FROM t_mcmv t
@@ -619,7 +617,7 @@ HAVING AVG(vlr_renda_familiar) > (
 )
 ORDER BY renda_media DESC, dl.uf;
 
--- Visualizando quais UFs tem a média de renda familiar menor do que a média nacional
+-- Visualizando quais UFs tem a mÃ©dia de renda familiar menor do que a mÃ©dia nacional
 
 SELECT dl.uf, AVG(vlr_renda_familiar) AS renda_media
 FROM t_mcmv t
@@ -631,13 +629,13 @@ HAVING AVG(vlr_renda_familiar) < (
 )
 ORDER BY renda_media DESC, dl.uf;
 
--- Visualizando o valor médio nacional de financiamento
+-- Visualizando o valor mÃ©dio nacional de financiamento
 
 SELECT CAST(AVG(vlr_financiamento) AS DECIMAL(18,2)) AS financiamento_medio
 FROM t_mcmv t
 ORDER BY financiamento_medio DESC
 
--- Visualizando o valor médio mínimo e máximo nacional de financiamento
+-- Visualizando o valor mÃ©dio mÃ­nimo e mÃ¡ximo nacional de financiamento
 
 SELECT 
   MAX(vlr_financiamento) AS financiamento_maximo,
@@ -646,7 +644,7 @@ FROM t_mcmv
 WHERE vlr_financiamento > 1; -- para ignorar os registros sem financiamento e pegar apenas linhas que tiveram algum valor
 
 
- -- Visualizando o valor médio de financiamento por UF
+ -- Visualizando o valor mÃ©dio de financiamento por UF
 
 SELECT dl.uf, CAST(AVG(vlr_financiamento) AS DECIMAL(18,2)) AS financiamento_medio
 FROM t_mcmv t
@@ -654,7 +652,7 @@ JOIN dim_localidade dl ON t.id_localidade = dl.id_localidade
 GROUP BY dl.uf
 ORDER BY financiamento_medio DESC, dl.uf;
 
- -- Visualizando o valor médio, mínimo e máximo de financiamento por UF
+ -- Visualizando o valor mÃ©dio, mÃ­nimo e mÃ¡ximo de financiamento por UF
 
 SELECT dl.uf, 
 COUNT(*) AS total_quantidades,
@@ -688,7 +686,7 @@ WHERE dt.ano <> ' '
 GROUP BY dt.ano
 ORDER BY financiamento_total DESC;
 
--- Visualizando o total de financiamento por ANO, desconsiderando as linhas sem ano, em ordem cronológica
+-- Visualizando o total de financiamento por ANO, desconsiderando as linhas sem ano, em ordem cronolÃ³gica
 SELECT  
   dt.ano AS ano_assinatura,
   CAST(SUM(vlr_financiamento) AS DECIMAL (18,2)) AS financiamento_total
@@ -761,9 +759,9 @@ WHERE t.dte_nascimento IS NOT NULL AND dt.data_assinatura IS NOT NULL
 GROUP BY dl.uf, DATEDIFF(YEAR, t.dte_nascimento, dt.data_assinatura)
 ORDER BY idade;
 
--- Visualizando a idade média, menor idade e maior idade nacionais
+-- Visualizando a idade mÃ©dia, menor idade e maior idade nacionais
 SELECT
-  AVG(DATEDIFF(YEAR, t.dte_nascimento, dt.data_assinatura)) AS idade_média,
+  AVG(DATEDIFF(YEAR, t.dte_nascimento, dt.data_assinatura)) AS idade_mÃ©dia,
   MIN(DATEDIFF(YEAR, t.dte_nascimento, dt.data_assinatura)) AS menor_idade,
   MAX(DATEDIFF(YEAR, t.dte_nascimento, dt.data_assinatura)) AS maior_idade
 FROM t_mcmv t
@@ -771,9 +769,9 @@ JOIN dim_tempo dt ON t.id_tempo = dt.id_tempo
 WHERE t.dte_nascimento IS NOT NULL AND dt.data_assinatura IS NOT NULL
 
 
--- Visualizando a idade média, menor idade e maior idade por UF
+-- Visualizando a idade mÃ©dia, menor idade e maior idade por UF
 SELECT dl.uf,
-  AVG(DATEDIFF(YEAR, t.dte_nascimento, dt.data_assinatura)) AS idade_média,
+  AVG(DATEDIFF(YEAR, t.dte_nascimento, dt.data_assinatura)) AS idade_mÃ©dia,
   MIN(DATEDIFF(YEAR, t.dte_nascimento, dt.data_assinatura)) AS menor_idade,
   MAX(DATEDIFF(YEAR, t.dte_nascimento, dt.data_assinatura)) AS maior_idade
 FROM t_mcmv t
@@ -869,7 +867,7 @@ JOIN dim_tipo_imovel dti ON t.id_tipo_imovel = dti.id_tipo_imovel
 GROUP BY dti.descricao_tipo_imovel
 ORDER BY quantidade DESC;
 
--- Análise do tipo de imóvel mais comum por faixa de renda
+-- AnÃ¡lise do tipo de imÃ³vel mais comum por faixa de renda
 SELECT  dfr.faixa_renda,dti.descricao_tipo_imovel,
   COUNT(*) AS quantidade
 FROM t_mcmv t
@@ -879,7 +877,7 @@ GROUP BY dfr.faixa_renda, dti.descricao_tipo_imovel
 ORDER BY dfr.faixa_renda, quantidade DESC;
 
 
--- Distribuição dos sistemas de amortização usados nos financiamentos
+-- DistribuiÃ§Ã£o dos sistemas de amortizaÃ§Ã£o usados nos financiamentos
 SELECT dsa.sistema,
   COUNT(*) AS total
 FROM t_mcmv t
